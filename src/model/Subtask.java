@@ -41,7 +41,7 @@ public class Subtask extends Task {
         return "model.Subtask{" +
                 "taskName='" + taskName + '\'' +
                 ", description='" + description + '\'' +
-                ", status=" + status + '\'' +
+                ", status='" + status + '\'' +
                 ", taskId=" + taskId +
                 ", epicId=" + epicId +
                 '}';

@@ -86,7 +86,7 @@ public class Task {
         return "model.Task{" +
                 "taskName='" + taskName + '\'' +
                 ", description='" + description + '\'' +
-                ", status=" + status + '\'' +
+                ", status='" + status + '\'' +
                 ", taskId=" + taskId +
                 '}';
     }

@@ -1,3 +1,4 @@
+import controller.InMemoryTaskManager;
 import controller.TaskManager;
 import model.Epic;
 import model.Subtask;
@@ -10,7 +11,7 @@ public class Main {
 
     public static void main(String[] args) {
         System.out.println("Поехали!");
-        TaskManager taskManager = new TaskManager();
+        TaskManager taskManager = new InMemoryTaskManager();
 
         System.out.println("Проверки типа TASK: ");
         System.out.println("1. Создать 3 задачи.");
@@ -71,7 +72,7 @@ public class Main {
         taskManager.updateSubtask(subtask2Updated);
         System.out.println(taskManager.getSubtask(7));
         System.out.println("4. Проверить статус у Epic c ID - 4");
-        Epic epicWithId4 =  taskManager.getEpic(4);
+        Epic epicWithId4 = taskManager.getEpic(4);
         System.out.println(epicWithId4.getStatus());
         System.out.println("OK - Статус - IN_PROGRESS");
         System.out.println("5. Поменять статусы у SUBTASK на DONE которые относятся к EPIC с ID - 4");
@@ -103,5 +104,8 @@ public class Main {
         System.out.println(taskManager.getEpics());
         System.out.println(taskManager.getTaskStorage());
         System.out.println("OK");
+        System.out.println(taskManager.getHistory());
+        taskManager.getTask(1);
+        System.out.println(taskManager.getHistory());
     }
 }

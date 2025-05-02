@@ -1,6 +1,7 @@
 package model;
 
 import util.TaskStatus;
+
 import java.util.ArrayList;
 
 public class Epic extends Task {
@@ -30,17 +31,13 @@ public class Epic extends Task {
         epicSubtasks.remove(subtask);
     }
 
-    public ArrayList<Subtask> getEpicSubtasks() {
-        return epicSubtasks;
-    }
-
     public void manageEpicStatus() {
         if (this.epicSubtasks.isEmpty()) {
             this.status = TaskStatus.NEW;
             return;
         }
 
-        boolean allNew =  epicSubtasks.stream()
+        boolean allNew = epicSubtasks.stream()
                 .map(subtask -> subtask.getStatus())
                 .allMatch(status -> status == TaskStatus.NEW);
         if (allNew) {
@@ -70,7 +67,7 @@ public class Epic extends Task {
                 "taskName='" + taskName + '\'' +
                 ", description='" + description + '\'' +
                 ", taskId=" + taskId +
-                ", status=" + status +
+                ", status='" + status + '\'' +
                 '}';
     }
 }
