@@ -1,5 +1,7 @@
 package model;
 
+import java.util.Objects;
+
 public class Node<T> {
     public Node<T> prev;
     public T data;
@@ -16,6 +18,11 @@ public class Node<T> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Node<?> node = (Node<?>) o;
-        return data.equals(node.data);
+        return Objects.equals(data, node.data);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(data);
     }
 }
