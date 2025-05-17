@@ -58,12 +58,14 @@ public class InMemoryTaskManager implements TaskManager {
         List<Integer> taskIds = tasks.values().stream().map(Task::getTaskId).toList();
         tasks.clear();
         taskIds.forEach(taskStorage::remove);
+        taskIds.forEach(historyManager::remove);
     }
 
     @Override
     public void deleteTask(int id) {
         tasks.remove(id);
         taskStorage.remove(id);
+        historyManager.remove(id);
     }
 
     @Override
@@ -119,6 +121,7 @@ public class InMemoryTaskManager implements TaskManager {
         });
         subtasks.clear();
         subtaskIds.forEach(taskStorage::remove);
+        subtaskIds.forEach(historyManager::remove);
     }
 
     @Override
@@ -129,6 +132,7 @@ public class InMemoryTaskManager implements TaskManager {
         epic.manageEpicStatus();
         subtasks.remove(id);
         taskStorage.remove(id);
+        historyManager.remove(id);
     }
 
 
@@ -176,9 +180,21 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public void deleteEpics() {
-        List<Integer> epicIds = epics.values().stream().map(epic -> epic.getTaskId()).collect(Collectors.toList());
+        List<Integer> epicIds = epics.values().stream().map(Task::getTaskId).toList();
+        epicIds.forEach(id ->  {
+            Epic epic = epics.get(id);
+            ArrayList<Subtask> epicsSubtasks = epic.getSubtasks();
+            if (!epicsSubtasks.isEmpty()) {
+                epicsSubtasks.forEach(subtask -> {
+                    subtasks.remove(subtask.getTaskId());
+                    taskStorage.remove(subtask.getTaskId());
+                    historyManager.remove(subtask.getTaskId());
+                });
+            }
+        });
         epics.clear();
         epicIds.forEach(taskStorage::remove);
+        epicIds.forEach(historyManager::remove);
     }
 
     @Override
@@ -189,9 +205,11 @@ public class InMemoryTaskManager implements TaskManager {
             int taskId = epicSubtask.getTaskId();
             subtasks.remove(taskId);
             taskStorage.remove(taskId);
+            historyManager.remove(taskId);
         });
         epics.remove(id);
         taskStorage.remove(id);
+        historyManager.remove(id);
     }
 
     @Override
