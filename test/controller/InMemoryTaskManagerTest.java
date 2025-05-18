@@ -52,6 +52,7 @@ class InMemoryTaskManagerTest {
         Task updatedTask = new Task("UpdatedTask", "UpdatedDescription", testTask.getTaskId());
         taskManager.updateTask(updatedTask);
         taskManager.getTask(1);
+        expectedHistory.removeFirst();
         expectedHistory.add(updatedTask);
         Assertions.assertEquals(expectedHistory, taskManager.getHistory());
     }
