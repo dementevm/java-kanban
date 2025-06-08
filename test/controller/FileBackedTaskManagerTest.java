@@ -9,13 +9,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.io.File;
 import java.nio.file.Files;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.nio.file.Paths;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class FileBackedTaskManagerTest {
     private FileBackedTaskManager taskManager;
@@ -161,5 +166,68 @@ class FileBackedTaskManagerTest {
         List<String> lines = Files.readAllLines(taskManager.getFileStoragePath());
         assertFalse(lines.isEmpty());
         assertEquals("id,type,name,status,description,epic", lines.getFirst());
+    }
+
+    @Test
+    void testLoadFromFile_NullFile_ThrowsException() {
+        assertThrows(
+                exceptions.ManagerSaveException.class,
+                () -> FileBackedTaskManager.loadFromFile(null)
+        );
+    }
+
+    @Test
+    void testLoadFromFile_fileDoesntExist_ThrowsException() {
+        File file = new File("src/resources/does_not_exist.csv");
+        assertThrows(
+                exceptions.ManagerSaveException.class,
+                () -> FileBackedTaskManager.loadFromFile(file)
+        );
+    }
+
+    @Test
+    void testLoadFromFile_EmptyFile_ReturnsManagerWithNoTasks() throws Exception {
+        File testFile = File.createTempFile("test", "csv");
+        testFile.deleteOnExit();
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(testFile))) {
+            writer.write("id,type,name,status,description,epic");
+            writer.newLine();
+        }
+        FileBackedTaskManager manager = FileBackedTaskManager.loadFromFile(testFile);
+        assertNotNull(manager);
+        assertTrue(manager.getTaskStorage().isEmpty());
+        assertTrue(manager.getTasks().isEmpty());
+        assertTrue(manager.getEpics().isEmpty());
+        assertTrue(manager.getSubtasks().isEmpty());
+    }
+
+    @Test
+    void testLoadFromFile_WithTasksAndEpicsAndSubtasks() throws Exception {
+        File testFile = File.createTempFile("test", "csv");
+        testFile.deleteOnExit();
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(testFile))) {
+            writer.write("id,type,name,status,description,epic");
+            writer.newLine();
+            writer.write("1,TASK,Task1,NEW,Description1,");
+            writer.newLine();
+            writer.write("2,EPIC,Epic1,NEW,Description2,");
+            writer.newLine();
+            writer.write("3,SUBTASK,Subtask1,NEW,Description3,2");
+            writer.newLine();
+        }
+        FileBackedTaskManager manager = FileBackedTaskManager.loadFromFile(testFile);
+        List<Task> tasks = manager.getTasks();
+        assertEquals(1, tasks.size());
+        assertEquals("Task1", tasks.getFirst().getTaskName());
+        List<Epic> epics = manager.getEpics();
+        assertEquals(1, epics.size());
+        assertEquals("Epic1", epics.getFirst().getTaskName());
+        List<Subtask> subtasks = manager.getSubtasks();
+        assertEquals(1, subtasks.size());
+        assertEquals("Subtask1", subtasks.getFirst().getTaskName());
+        assertEquals(2, subtasks.getFirst().getEpicId());
+        Epic epic = epics.getFirst();
+        assertEquals(1, epic.getSubtasks().size());
+        assertEquals("Subtask1", epic.getSubtasks().getFirst().getTaskName());
     }
 }

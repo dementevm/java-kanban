@@ -16,42 +16,42 @@ public interface TaskManager {
     List<Task> getHistory();
 
     // Методы для Tasks
-    int createTask(Task task) throws IOException;
+    int createTask(Task task);
 
     ArrayList<Task> getTasks();
 
-    Task getTask(int id) throws TaskNotFound;
+    Task getTask(int id);
 
-    void deleteTasks() throws IOException;
+    void deleteTasks();
 
-    void deleteTask(int id) throws IOException, TaskNotFound;
+    void deleteTask(int id);
 
-    Integer updateTask(Task updatedTask) throws IOException, TaskNotFound;
+    Integer updateTask(Task updatedTask);
 
     // Методы для Subtasks
-    int createSubtask(Subtask subtask) throws IOException, TaskNotFound;
+    int createSubtask(Subtask subtask);
 
     ArrayList<Subtask> getSubtasks();
 
-    Subtask getSubtask(int id) throws TaskNotFound;
+    Subtask getSubtask(int id);
 
-    void deleteSubtasks() throws IOException;
+    void deleteSubtasks();
 
-    void deleteSubtask(int id) throws IOException, TaskNotFound;
+    void deleteSubtask(int id);
 
-    Integer updateSubtask(Subtask updatedSubtask) throws IOException, TaskNotFound;
+    Integer updateSubtask(Subtask updatedSubtask);
 
     // Методы для Epics
-    int createEpic(Epic epic) throws IOException;
+    int createEpic(Epic epic);
 
     ArrayList<Epic> getEpics();
 
-    Epic getEpic(int id) throws TaskNotFound;
+    Epic getEpic(int id);
 
-    void deleteEpics() throws IOException;
+    void deleteEpics();
 
-    void deleteEpic(int id) throws IOException, TaskNotFound;
+    void deleteEpic(int id);
 
-    Integer updateEpic(Epic updatedEpic) throws IOException, TaskNotFound;
+    Integer updateEpic(Epic updatedEpic);
 }
 

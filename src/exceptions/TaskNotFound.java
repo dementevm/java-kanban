@@ -1,6 +1,6 @@
 package exceptions;
 
-public class TaskNotFound extends Exception {
+public class TaskNotFound extends RuntimeException {
     public TaskNotFound() {
         super("Задача с таким ID - отсутствует");
     }

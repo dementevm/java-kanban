@@ -1,13 +1,15 @@
 package controller;
 
-import exceptions.TaskNotFound;
+import exceptions.ManagerSaveException;
 import model.Epic;
 import model.Subtask;
 import model.Task;
-import util.CsvUtils;
 import util.TaskStatus;
 
 import java.io.BufferedWriter;
+import java.io.BufferedReader;
+import java.nio.charset.StandardCharsets;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -19,28 +21,49 @@ import java.util.Comparator;
 public class FileBackedTaskManager extends InMemoryTaskManager {
     private final Path fileStoragePath;
 
-    public FileBackedTaskManager() throws IOException, TaskNotFound {
+    public FileBackedTaskManager() throws IOException {
         super();
         this.fileStoragePath = Paths.get("src", "resources", "dataStorage.csv");
         initiateFileStorage();
     }
 
-    public FileBackedTaskManager(Path fileStoragePath) throws TaskNotFound, IOException {
+    public FileBackedTaskManager(Path fileStoragePath) throws IOException {
         super();
         this.fileStoragePath = fileStoragePath;
         initiateFileStorage();
     }
 
-    private void initiateFileStorage() throws IOException, TaskNotFound {
+    private void initiateFileStorage() {
         if (!Files.exists(fileStoragePath)) {
-            Files.createFile(fileStoragePath);
-            try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileStoragePath.toFile()))) {
-                writer.write("id,type,name,status,description,epic");
-                writer.newLine();
+            try {
+                Files.createFile(fileStoragePath);
+                try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileStoragePath.toFile()))) {
+                    writer.write("id,type,name,status,description,epic");
+                    writer.newLine();
+                }
+            } catch (IOException e) {
+                throw new ManagerSaveException("Ошибка при создании файла с данными");
             }
-        } else {
-            ArrayList<String> dataFromFile = CsvUtils.getDataFromFile(fileStoragePath);
-            dataFromFile.sort(Comparator.comparingInt(s -> {
+        }
+    }
+
+    static FileBackedTaskManager loadFromFile(File file) {
+        if (file == null || !file.exists()) {
+            throw new ManagerSaveException("Файл " + file + " отсутствует или не может быть открыт");
+        }
+        try {
+            FileBackedTaskManager manager = new FileBackedTaskManager(file.toPath());
+            ArrayList<String> lines = new ArrayList<>();
+            try (BufferedReader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (!line.equals("id,type,name,status,description,epic")) {
+                        lines.add(line);
+                    }
+                }
+            }
+            // Сортировка, чтобы сабтаски создавались сразу с нужными эпиками
+            lines.sort(Comparator.comparingInt(s -> {
                 String type = s.split(",")[1];
                 return switch (type) {
                     case "TASK" -> 0;
@@ -49,8 +72,8 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                     default -> 3; // Заглушка чтобы был default
                 };
             }));
-            if (!dataFromFile.isEmpty()) {
-                for (String line : dataFromFile) {
+            if (!lines.isEmpty()) {
+                for (String line : lines) {
                     String[] fields = line.split(",");
                     int id = Integer.parseInt(fields[0]);
                     String type = fields[1];
@@ -61,131 +84,130 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                     switch (type) {
                         case "TASK" -> {
                             Task task = new Task(name, description, id, status);
-                            tasks.put(id, task);
-                            taskStorage.put(id, task);
+                            manager.tasks.put(id, task);
+                            manager.taskStorage.put(id, task);
                         }
                         case "EPIC" -> {
                             Epic epic = new Epic(name, description, id, status);
-                            epics.put(id, epic);
-                            taskStorage.put(id, epic);
+                            manager.epics.put(id, epic);
+                            manager.taskStorage.put(id, epic);
                         }
                         case "SUBTASK" -> {
                             Subtask subtask;
                             if (fields.length == 6) {
                                 int epicId = Integer.parseInt(fields[5]);
                                 subtask = new Subtask(name, description, id, epicId, status);
-                                getEpic(epicId).addSubtask(subtask);
+                                manager.getEpic(epicId).addSubtask(subtask);
                             } else {
                                 subtask = new Subtask(name, description, id, status);
                             }
-                            subtasks.put(id, subtask);
-                            taskStorage.put(id, subtask);
+                            manager.subtasks.put(id, subtask);
+                            manager.taskStorage.put(id, subtask);
                         }
                     }
                 }
             }
+            return manager;
+        } catch (IOException e) {
+            throw new ManagerSaveException("Возникла ошибка при получении данных из файла.");
         }
     }
+
 
     public Path getFileStoragePath() {
         return fileStoragePath;
     }
 
-    private void save(Task task) throws IOException {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileStoragePath.toFile(), true))) {
-            writer.write(task.toDataStorageFile());
+    private void save() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(fileStoragePath.toFile()))) {
+            String header = "id,type,name,status,description,epic";
+            writer.write(header);
             writer.newLine();
+            for (Task task : getTaskStorage().values()) {
+                writer.write(task.toDataStorageFile());
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            throw new ManagerSaveException("Ошибка сохранения данных");
         }
     }
 
-    private void delete(int column, String value) throws IOException {
-        CsvUtils.deleteLine(fileStoragePath, column, value);
-    }
-
-    private void update(String value, String newValue) throws IOException {
-        CsvUtils.updateLine(fileStoragePath, value, newValue);
-    }
-
     @Override
-    public int createTask(Task task) throws IOException {
+    public int createTask(Task task) {
         super.createTask(task);
-        save(task);
+        save();
         return task.getTaskId();
     }
 
     @Override
-    public void deleteTasks() throws IOException {
+    public void deleteTasks() {
         super.deleteTasks();
-        delete(1, "TASK");
+        save();
     }
 
     @Override
-    public void deleteTask(int id) throws IOException, TaskNotFound {
+    public void deleteTask(int id) {
         super.deleteTask(id);
-        delete(0, String.valueOf(id));
+        save();
     }
 
     @Override
-    public Integer updateTask(Task updatedTask) throws IOException, TaskNotFound {
+    public Integer updateTask(Task updatedTask) {
         super.updateTask(updatedTask);
         int taskId = updatedTask.getTaskId();
-        update(String.valueOf(taskId), updatedTask.toDataStorageFile());
+        save();
         return taskId;
     }
 
     @Override
-    public int createSubtask(Subtask subtask) throws IOException, TaskNotFound {
+    public int createSubtask(Subtask subtask) {
         super.createSubtask(subtask);
-        save(subtask);
-        int epicId = subtask.getEpicId();
-        update(String.valueOf(epicId), getEpic(epicId).toDataStorageFile());
+        save();
         return subtask.getTaskId();
     }
 
     @Override
-    public void deleteSubtasks() throws IOException {
+    public void deleteSubtasks() {
         super.deleteSubtasks();
-        delete(1, "SUBTASK");
+        save();
     }
 
     @Override
-    public void deleteSubtask(int id) throws IOException, TaskNotFound {
+    public void deleteSubtask(int id) {
         super.deleteSubtask(id);
-        delete(0, String.valueOf(id));
+        save();
     }
 
     @Override
-    public Integer updateSubtask(Subtask updatedSubtask) throws IOException, TaskNotFound {
+    public Integer updateSubtask(Subtask updatedSubtask) {
         super.updateSubtask(updatedSubtask);
-        int subtaskId = updatedSubtask.getTaskId();
-        update(String.valueOf(subtaskId), updatedSubtask.toDataStorageFile());
-        return subtaskId;
+        save();
+        return updatedSubtask.getTaskId();
     }
 
     @Override
-    public int createEpic(Epic epic) throws IOException {
+    public int createEpic(Epic epic) {
         super.createEpic(epic);
-        save(epic);
+        save();
         return epic.getTaskId();
     }
 
     @Override
-    public void deleteEpics() throws IOException {
+    public void deleteEpics() {
         super.deleteEpics();
-        delete(1, "EPIC");
+        save();
     }
 
     @Override
-    public void deleteEpic(int id) throws IOException, TaskNotFound {
+    public void deleteEpic(int id) {
         super.deleteEpic(id);
-        delete(0, String.valueOf(id));
+        save();
     }
 
     @Override
-    public Integer updateEpic(Epic updatedEpic) throws IOException, TaskNotFound {
+    public Integer updateEpic(Epic updatedEpic) {
         super.updateEpic(updatedEpic);
-        int epicId = updatedEpic.getTaskId();
-        update(String.valueOf(epicId), updatedEpic.toDataStorageFile());
-        return epicId;
+        save();
+        return updatedEpic.getTaskId();
     }
 }
