@@ -19,7 +19,7 @@ public class CsvUtils {
             CsvActions action,
             String newValue
     ) throws IOException {
-        Path tempFile = Paths.get("tempDataStorage.csv");
+        Path tempFile = Paths.get("src", "resources", "tempDataStorage.csv");
 
         try (BufferedReader reader = Files.newBufferedReader(inputFile, StandardCharsets.UTF_8);
              BufferedWriter writer = Files.newBufferedWriter(
@@ -45,7 +45,6 @@ public class CsvUtils {
             }
         }
         Files.move(tempFile, inputFile, StandardCopyOption.REPLACE_EXISTING);
-        Files.deleteIfExists(tempFile);
     }
 
     public static void deleteLine(Path inputFile, int column, String matchValue) throws IOException {

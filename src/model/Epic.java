@@ -61,6 +61,7 @@ public class Epic extends Task {
 
     public void clearSubtasks() {
         epicSubtasks.clear();
+        manageEpicStatus();
     }
 
     @Override
