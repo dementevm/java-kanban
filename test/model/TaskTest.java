@@ -1,13 +1,13 @@
 package model;
 
-import util.TaskStatus;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import util.TaskStatus;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class TaskTest {
+
     private Task testTask;
 
     @BeforeEach
@@ -77,7 +77,7 @@ class TaskTest {
                 "status='NEW', taskId=1}";
         assertEquals(toStringAssertion, testTask.toString());
     }
-    
+
     @Test
     void testToDataStorage() {
         String toStringAssertion = "1,TASK,Test Task,NEW,Test Description,";

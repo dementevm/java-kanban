@@ -1,8 +1,7 @@
 package model;
 
-import util.TaskStatus;
-
 import java.util.ArrayList;
+import util.TaskStatus;
 
 public class Epic extends Task {
     protected ArrayList<Subtask> epicSubtasks = new ArrayList<>();

@@ -1,16 +1,17 @@
 package model;
 
-import util.TaskStatus;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import util.TaskStatus;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class EpicTest {
+
     private Epic testEpic;
     private Subtask testSubtask1;
     private Subtask testSubtask2;

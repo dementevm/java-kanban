@@ -1,8 +1,7 @@
 package model;
 
-import util.TaskStatus;
-
 import java.util.Objects;
+import util.TaskStatus;
 
 public class Task {
     protected String taskName;
@@ -15,7 +14,6 @@ public class Task {
         this.description = description;
     }
 
-
     public Task(String taskName, String description, int taskId) {
         this.taskName = taskName;
         this.description = description;
@@ -26,7 +24,6 @@ public class Task {
         this.taskName = taskName;
         this.description = description;
         this.status = status;
-
     }
 
     public Task(String taskName, String description, int taskId, TaskStatus status) {

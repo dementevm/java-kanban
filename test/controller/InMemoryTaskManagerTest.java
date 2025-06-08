@@ -2,8 +2,8 @@ package controller;
 
 import exceptions.TaskNotFound;
 import model.Epic;
-import model.Task;
 import model.Subtask;
+import model.Task;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import util.Managers;
@@ -13,14 +13,16 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class InMemoryTaskManagerTest {
+
     private TaskManager taskManager;
     private Task testTask;
     private Epic testEpic;
     private Subtask testSubtask;
-
 
     @BeforeEach
     void setUp() throws IOException, TaskNotFound {
