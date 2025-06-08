@@ -17,7 +17,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
 
     public FileBackedTaskManager() throws IOException, TaskNotFound {
         super();
-        this.fileStoragePath = Paths.get("src" ,"resources", "dataStorage.csv");
+        this.fileStoragePath = Paths.get("src", "resources", "dataStorage.csv");
         initiateFileStorage();
     }
 
@@ -42,8 +42,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                     case "TASK" -> 0;
                     case "EPIC" -> 1;
                     case "SUBTASK" -> 2;
-                    default -> 3;
-                    // Заглушка чтобы был default
+                    default -> 3; // Заглушка чтобы был default
                 };
             }));
             if (!dataFromFile.isEmpty()) {
@@ -56,17 +55,17 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                     String description = fields[4];
 
                     switch (type) {
-                        case "TASK":
+                        case "TASK" -> {
                             Task task = new Task(name, description, id, status);
                             tasks.put(id, task);
                             taskStorage.put(id, task);
-                            break;
-                        case "EPIC":
+                        }
+                        case "EPIC" -> {
                             Epic epic = new Epic(name, description, id, status);
                             epics.put(id, epic);
                             taskStorage.put(id, epic);
-                            break;
-                        case "SUBTASK":
+                        }
+                        case "SUBTASK" -> {
                             Subtask subtask;
                             if (fields.length == 6) {
                                 int epicId = Integer.parseInt(fields[5]);
@@ -77,7 +76,7 @@ public class FileBackedTaskManager extends InMemoryTaskManager {
                             }
                             subtasks.put(id, subtask);
                             taskStorage.put(id, subtask);
-                            break;
+                        }
                     }
                 }
             }
