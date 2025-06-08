@@ -90,4 +90,9 @@ public class Task {
                 ", taskId=" + taskId +
                 '}';
     }
+
+    public String toDataStorageFile() {
+        return taskId + "," + getClass().getSimpleName().toUpperCase() + "," + taskName + "," + status
+                + "," + description + ",";
+    }
 }

@@ -5,18 +5,21 @@ import util.TaskStatus;
 import java.util.ArrayList;
 
 public class Epic extends Task {
-    protected ArrayList<Subtask> epicSubtasks;
+    protected ArrayList<Subtask> epicSubtasks = new ArrayList<>();
 
     public Epic(String taskName, String description) {
         super(taskName, description);
-        epicSubtasks = new ArrayList<>();
         manageEpicStatus();
     }
 
     public Epic(String taskName, String description, int id) {
         super(taskName, description, id);
-        epicSubtasks = new ArrayList<>();
         manageEpicStatus();
+    }
+
+    public Epic(String taskName, String description, int id, TaskStatus status) {
+        // Конструктор для добавления эпиков из файла.
+        super(taskName, description, id, status);
     }
 
     public ArrayList<Subtask> getSubtasks() {
@@ -38,14 +41,14 @@ public class Epic extends Task {
         }
 
         boolean allNew = epicSubtasks.stream()
-                .map(subtask -> subtask.getStatus())
+                .map(Task::getStatus)
                 .allMatch(status -> status == TaskStatus.NEW);
         if (allNew) {
             this.status = TaskStatus.NEW;
             return;
         }
         boolean allDone = epicSubtasks.stream()
-                .map(subtask -> subtask.getStatus())
+                .map(Task::getStatus)
                 .allMatch(status -> status == TaskStatus.DONE);
 
         if (allDone) {
@@ -54,6 +57,10 @@ public class Epic extends Task {
         }
 
         this.status = TaskStatus.IN_PROGRESS;
+    }
+
+    public void clearSubtasks() {
+        epicSubtasks.clear();
     }
 
     @Override

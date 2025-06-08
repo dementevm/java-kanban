@@ -1,20 +1,22 @@
 package controller;
 
+import exceptions.TaskNotFound;
 import model.Epic;
 import model.Subtask;
 import model.Task;
 import util.Managers;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class InMemoryTaskManager implements TaskManager {
-    private final HashMap<Integer, Task> taskStorage = new HashMap<>();
-    private final HashMap<Integer, Task> tasks = new HashMap<>();
-    private final HashMap<Integer, Subtask> subtasks = new HashMap<>();
-    private final HashMap<Integer, Epic> epics = new HashMap<>();
+    protected final HashMap<Integer, Task> taskStorage = new HashMap<>();
+    protected final HashMap<Integer, Task> tasks = new HashMap<>();
+    protected final HashMap<Integer, Subtask> subtasks = new HashMap<>();
+    protected final HashMap<Integer, Epic> epics = new HashMap<>();
     private int idCounter = 0;
     private final HistoryManager historyManager = Managers.getDefaultHistory();
 
@@ -30,7 +32,7 @@ public class InMemoryTaskManager implements TaskManager {
 
     // Методы для Tasks
     @Override
-    public int createTask(Task task) {
+    public int createTask(Task task) throws IOException {
         final int id = ++idCounter;
         task.setTaskId(id);
         tasks.put(id, task);
@@ -44,30 +46,34 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public Task getTask(int id) {
+    public Task getTask(int id) throws TaskNotFound {
         Task task = tasks.get(id);
         if (task != null) {
             historyManager.add(task);
             return task;
         }
-        return null;
+        throw new TaskNotFound();
     }
 
     @Override
-    public void deleteTasks() {
+    public void deleteTasks() throws IOException {
         List<Integer> taskIds = tasks.values().stream().map(Task::getTaskId).toList();
         tasks.clear();
         taskIds.forEach(taskStorage::remove);
     }
 
     @Override
-    public void deleteTask(int id) {
-        tasks.remove(id);
-        taskStorage.remove(id);
+    public void deleteTask(int id) throws IOException, TaskNotFound {
+        if (tasks.containsKey(id)) {
+            tasks.remove(id);
+            taskStorage.remove(id);
+        } else {
+            throw new TaskNotFound();
+        }
     }
 
     @Override
-    public Integer updateTask(Task updatedTask) {
+    public Integer updateTask(Task updatedTask) throws IOException, TaskNotFound {
         Task task = tasks.get(updatedTask.getTaskId());
         if (task != null) {
             if (task.equals(updatedTask)) {
@@ -77,21 +83,25 @@ public class InMemoryTaskManager implements TaskManager {
                 return taskId;
             }
         }
-        throw new UnsupportedOperationException("Задача с ID: " + updatedTask.getTaskId() + " отсутствует. Воспользуется методом createTask");
+        throw new TaskNotFound("Задача с ID: " + updatedTask.getTaskId() + " отсутствует. Воспользуется методом createTask");
     }
 
 
     // Методы для Subtasks
     @Override
-    public int createSubtask(Subtask subtask) {
+    public int createSubtask(Subtask subtask) throws IOException, TaskNotFound {
         final int id = ++idCounter;
-        subtask.setTaskId(id);
-        subtasks.put(id, subtask);
-        taskStorage.put(id, subtask);
         Epic subtaskEpic = epics.get(subtask.getEpicId());
-        subtaskEpic.addSubtask(subtask);
-        subtaskEpic.manageEpicStatus();
-        return id;
+        if (subtaskEpic != null) {
+            subtask.setTaskId(id);
+            subtasks.put(id, subtask);
+            taskStorage.put(id, subtask);
+            subtaskEpic.addSubtask(subtask);
+            subtaskEpic.manageEpicStatus();
+            return id;
+        } else {
+            throw new TaskNotFound();
+        }
     }
 
     @Override
@@ -100,18 +110,18 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public Subtask getSubtask(int id) {
+    public Subtask getSubtask(int id) throws TaskNotFound {
         Subtask subtask = subtasks.get(id);
         if (subtask != null) {
             historyManager.add(subtask);
             return subtask;
         }
-        return null;
+        throw new TaskNotFound();
     }
 
     @Override
-    public void deleteSubtasks() {
-        List<Integer> subtaskIds = subtasks.values().stream().map(epic -> epic.getTaskId()).collect(Collectors.toList());
+    public void deleteSubtasks() throws IOException {
+        List<Integer> subtaskIds = subtasks.values().stream().map(Task::getTaskId).toList();
         subtasks.values().forEach(subtask -> {
             Epic epic = epics.get(subtask.getEpicId());
             epic.removeSubtask(subtask);
@@ -122,36 +132,44 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public void deleteSubtask(int id) {
+    public void deleteSubtask(int id) throws IOException, TaskNotFound {
         Subtask subtask = subtasks.get(id);
-        Epic epic = epics.get(subtask.getEpicId());
-        epic.removeSubtask(subtask);
-        epic.manageEpicStatus();
-        subtasks.remove(id);
-        taskStorage.remove(id);
+        if (subtask != null) {
+            Epic epic = epics.get(subtask.getEpicId());
+            if (epic != null) {
+                epic.removeSubtask(subtask);
+                epic.manageEpicStatus();
+            }
+            subtasks.remove(id);
+            taskStorage.remove(id);
+        } else {
+            throw new TaskNotFound();
+        }
     }
 
 
     @Override
-    public Integer updateSubtask(Subtask updatedSubtask) {
+    public Integer updateSubtask(Subtask updatedSubtask) throws IOException, TaskNotFound {
         Subtask subtask = subtasks.get(updatedSubtask.getTaskId());
-        if (subtask.equals(updatedSubtask)) {
-            int taskId = subtask.getTaskId();
-            subtasks.put(taskId, updatedSubtask);
-            taskStorage.put(taskId, updatedSubtask);
-            Epic epic = epics.get(subtask.getEpicId());
-            epic.removeSubtask(subtask);
-            epic.addSubtask(updatedSubtask);
-            epic.manageEpicStatus();
-            return taskId;
+        if (subtask != null) {
+            if (subtask.equals(updatedSubtask)) {
+                int taskId = subtask.getTaskId();
+                subtasks.put(taskId, updatedSubtask);
+                taskStorage.put(taskId, updatedSubtask);
+                Epic epic = epics.get(subtask.getEpicId());
+                epic.removeSubtask(subtask);
+                epic.addSubtask(updatedSubtask);
+                epic.manageEpicStatus();
+                return taskId;
+            }
         }
-        throw new UnsupportedOperationException("Задача с ID: " + updatedSubtask.getTaskId() + " отсутствует. Воспользуется методом createSubtask");
+        throw new TaskNotFound("Задача с ID: " + updatedSubtask.getTaskId() + " отсутствует. Воспользуется методом createSubtask");
     }
 
 
     // Методы для Epics
     @Override
-    public int createEpic(Epic epic) {
+    public int createEpic(Epic epic) throws IOException {
         final int id = ++idCounter;
         epic.setTaskId(id);
         epics.put(id, epic);
@@ -165,44 +183,55 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public Epic getEpic(int id) {
+    public Epic getEpic(int id) throws TaskNotFound {
         Epic epic = epics.get(id);
         if (epic != null) {
             historyManager.add(epic);
             return epic;
         }
-        return null;
+        throw new TaskNotFound();
     }
 
     @Override
-    public void deleteEpics() {
-        List<Integer> epicIds = epics.values().stream().map(epic -> epic.getTaskId()).collect(Collectors.toList());
+    public void deleteEpics() throws IOException {
+        List<Integer> epicIds = epics.values().stream().map(Task::getTaskId).toList();
         epics.clear();
         epicIds.forEach(taskStorage::remove);
     }
 
     @Override
-    public void deleteEpic(int id) {
+    public void deleteEpic(int id) throws IOException, TaskNotFound {
         Epic epic = epics.get(id);
-        ArrayList<Subtask> epicSubtasks = epic.getSubtasks();
-        epicSubtasks.forEach(epicSubtask -> {
-            int taskId = epicSubtask.getTaskId();
-            subtasks.remove(taskId);
-            taskStorage.remove(taskId);
-        });
-        epics.remove(id);
-        taskStorage.remove(id);
+        if (epic != null) {
+            ArrayList<Subtask> epicSubtasks = epic.getSubtasks();
+            epicSubtasks.forEach(epicSubtask -> {
+                int taskId = epicSubtask.getTaskId();
+                subtasks.remove(taskId);
+                taskStorage.remove(taskId);
+            });
+            epics.remove(id);
+            taskStorage.remove(id);
+        } else {
+            throw new TaskNotFound();
+        }
+
     }
 
     @Override
-    public Integer updateEpic(Epic updatedEpic) {
+    public Integer updateEpic(Epic updatedEpic) throws IOException, TaskNotFound {
         Epic epic = epics.get(updatedEpic.getTaskId());
-        if (epic.equals(updatedEpic)) {
-            int epicId = epic.getTaskId();
-            epics.put(epicId, updatedEpic);
-            taskStorage.put(epicId, updatedEpic);
-            return epicId;
+        if (epic != null) {
+            if (epic.equals(updatedEpic)) {
+                updatedEpic.clearSubtasks();
+                int epicId = epic.getTaskId();
+                for (Subtask subtask : epic.getSubtasks()) {
+                    updatedEpic.addSubtask(subtask);
+                }
+                epics.put(epicId, updatedEpic);
+                taskStorage.put(epicId, updatedEpic);
+                return epicId;
+            }
         }
-        throw new UnsupportedOperationException("Задача с ID: " + updatedEpic.getTaskId() + " отсутствует. Воспользуется методом createEpic");
+        throw new TaskNotFound();
     }
 }

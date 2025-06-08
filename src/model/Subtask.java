@@ -46,4 +46,9 @@ public class Subtask extends Task {
                 ", epicId=" + epicId +
                 '}';
     }
+
+    @Override
+    public String toDataStorageFile() {
+        return super.toDataStorageFile() + epicId;
+    }
 }

@@ -1,0 +1,71 @@
+package util;
+
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
+import java.util.ArrayList;
+
+public class CsvUtils {
+
+    public enum CsvActions {
+        DELETE,
+        UPDATE,
+    }
+
+    public static void manageCSV(
+            Path inputFile,
+            int column,
+            String matchValue,
+            CsvActions action,
+            String newValue
+    ) throws IOException {
+        Path tempFile = Paths.get("tempDataStorage.csv");
+
+        try (BufferedReader reader = Files.newBufferedReader(inputFile, StandardCharsets.UTF_8);
+             BufferedWriter writer = Files.newBufferedWriter(
+                     tempFile,
+                     StandardCharsets.UTF_8,
+                     StandardOpenOption.CREATE,
+                     StandardOpenOption.TRUNCATE_EXISTING
+             )
+        ) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",", -1);
+
+                if (parts.length > column && parts[column].equals(matchValue)) {
+                    if (action == CsvActions.DELETE) {
+                        continue;
+                    } else if (action == CsvActions.UPDATE) {
+                        line = newValue;
+                    }
+                }
+                writer.write(line);
+                writer.newLine();
+            }
+        }
+        Files.move(tempFile, inputFile, StandardCopyOption.REPLACE_EXISTING);
+        Files.deleteIfExists(tempFile);
+    }
+
+    public static void deleteLine(Path inputFile, int column, String matchValue) throws IOException {
+        manageCSV(inputFile, column, matchValue, CsvActions.DELETE, null);
+    }
+
+    public static void updateLine(Path inputFile, String matchValue, String newValue) throws IOException {
+        manageCSV(inputFile, 0, matchValue, CsvActions.UPDATE, newValue);
+    }
+
+    public static ArrayList<String> getDataFromFile(Path inputFile) throws IOException {
+        ArrayList<String> lines = new ArrayList<>();
+        try (BufferedReader reader = Files.newBufferedReader(inputFile, StandardCharsets.UTF_8)) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (!line.equals("id,type,name,status,description,epic")) {
+                    lines.add(line);
+                }
+            }
+        }
+        return lines;
+    }
+}

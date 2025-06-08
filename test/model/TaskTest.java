@@ -2,9 +2,10 @@ package model;
 
 import util.TaskStatus;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class TaskTest {
     private Task testTask;
@@ -15,65 +16,71 @@ class TaskTest {
     }
 
     @Test
-    void getTaskName() {
-        Assertions.assertEquals("Test Task", testTask.getTaskName());
+    void testGetTaskName() {
+        assertEquals("Test Task", testTask.getTaskName());
     }
 
     @Test
-    void setTaskName() {
+    void testSetTaskName() {
         testTask.setTaskName("Changed Task");
-        Assertions.assertEquals("Changed Task", testTask.getTaskName());
+        assertEquals("Changed Task", testTask.getTaskName());
     }
 
     @Test
-    void getDescription() {
-        Assertions.assertEquals("Test Description", testTask.getDescription());
+    void testGetDescription() {
+        assertEquals("Test Description", testTask.getDescription());
     }
 
     @Test
-    void setDescription() {
+    void testSetDescription() {
         testTask.setDescription("Changed Description");
-        Assertions.assertEquals("Changed Description", testTask.getDescription());
+        assertEquals("Changed Description", testTask.getDescription());
     }
 
     @Test
-    void getTaskId() {
-        Assertions.assertEquals(1, testTask.getTaskId());
+    void testGetTaskId() {
+        assertEquals(1, testTask.getTaskId());
     }
 
     @Test
-    void setTaskId() {
+    void testSetTaskId() {
         testTask.setTaskId(2);
-        Assertions.assertEquals(2, testTask.getTaskId());
+        assertEquals(2, testTask.getTaskId());
     }
 
     @Test
-    void getStatus() {
-        Assertions.assertEquals(TaskStatus.NEW, testTask.getStatus());
+    void testGetStatus() {
+        assertEquals(TaskStatus.NEW, testTask.getStatus());
     }
 
     @Test
-    void setStatus() {
+    void testSetStatus() {
         testTask.setStatus(TaskStatus.DONE);
-        Assertions.assertEquals(TaskStatus.DONE, testTask.getStatus());
+        assertEquals(TaskStatus.DONE, testTask.getStatus());
     }
 
     @Test
-    void tasksWithSameIdShouldBeEquals() {
+    void testTasksWithSameIdShouldBeEquals() {
         Task newTask = new Task("Test Task 2", "Test Description 2", 1);
-        Assertions.assertEquals(testTask, newTask);
+        assertEquals(testTask, newTask);
     }
 
     @Test
     void testHashCode() {
         Task hashedTestTask = new Task("Test Task", "Test Description", 1);
-        Assertions.assertEquals(testTask.hashCode(), hashedTestTask.hashCode());
+        assertEquals(testTask.hashCode(), hashedTestTask.hashCode());
     }
 
     @Test
     void testToString() {
         String toStringAssertion = "model.Task{taskName='Test Task', description='Test Description', " +
                 "status='NEW', taskId=1}";
-        Assertions.assertEquals(toStringAssertion, testTask.toString());
+        assertEquals(toStringAssertion, testTask.toString());
+    }
+    
+    @Test
+    void testToDataStorage() {
+        String toStringAssertion = "1,TASK,Test Task,NEW,Test Description,";
+        assertEquals(toStringAssertion, testTask.toDataStorageFile());
     }
 }
