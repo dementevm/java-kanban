@@ -1,11 +1,12 @@
 package model;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class SubtaskTest {
+
     private Subtask testSubtask;
 
     @BeforeEach
@@ -15,26 +16,32 @@ class SubtaskTest {
     }
 
     @Test
-    void getEpicId() {
-        Assertions.assertEquals(1, testSubtask.getEpicId());
+    void testGetEpicId() {
+        assertEquals(1, testSubtask.getEpicId());
     }
 
     @Test
-    void setEpicId() {
+    void testSetEpicId() {
         testSubtask.setEpicId(3);
-        Assertions.assertEquals(3, testSubtask.getEpicId());
+        assertEquals(3, testSubtask.getEpicId());
     }
 
     @Test
     void testToString() {
         String toStringAssertion = "model.Subtask{taskName='Test Subtask', description='Subtask Description', " +
                 "status='NEW', taskId=2, epicId=1}";
-        Assertions.assertEquals(toStringAssertion, testSubtask.toString());
+        assertEquals(toStringAssertion, testSubtask.toString());
     }
 
     @Test
-    void sameSubtaskShouldBeEqual() {
+    void testSameSubtaskShouldBeEqual() {
         Subtask newSubtask = new Subtask("Test Subtask2", "TestDescription2", 2, 1);
-        Assertions.assertEquals(newSubtask, testSubtask);
+        assertEquals(newSubtask, testSubtask);
+    }
+
+    @Test
+    void testToDataStorage() {
+        String toStringAssertion = "2,SUBTASK,Test Subtask,NEW,Subtask Description,1";
+        assertEquals(toStringAssertion, testSubtask.toDataStorageFile());
     }
 }

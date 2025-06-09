@@ -1,15 +1,17 @@
 package model;
 
-import util.TaskStatus;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Assertions;
+import util.TaskStatus;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 class EpicTest {
+
     private Epic testEpic;
     private Subtask testSubtask1;
     private Subtask testSubtask2;
@@ -24,50 +26,50 @@ class EpicTest {
     }
 
     @Test
-    void getSubtasks() {
+    void testGetSubtasks() {
         ArrayList<Subtask> expectedSubtasks = new ArrayList<>(Arrays.asList(testSubtask1, testSubtask2));
         ArrayList<Subtask> actualSubtasks = testEpic.getSubtasks();
-        Assertions.assertEquals(expectedSubtasks, actualSubtasks);
+        assertEquals(expectedSubtasks, actualSubtasks);
     }
 
     @Test
-    void addSubtask() {
-        Assertions.assertEquals(2, testEpic.getSubtasks().size());
+    void testAddSubtask() {
+        assertEquals(2, testEpic.getSubtasks().size());
         Subtask testSubTask3 = new Subtask("TestSubtask3", "TestDescription", 4, 1);
         testEpic.addSubtask(testSubTask3);
-        Assertions.assertEquals(3, testEpic.getSubtasks().size());
+        assertEquals(3, testEpic.getSubtasks().size());
     }
 
     @Test
-    void removeSubtask() {
-        Assertions.assertEquals(2, testEpic.getSubtasks().size());
+    void testRemoveSubtask() {
+        assertEquals(2, testEpic.getSubtasks().size());
         testEpic.removeSubtask(testSubtask1);
-        Assertions.assertEquals(1, testEpic.getSubtasks().size());
+        assertEquals(1, testEpic.getSubtasks().size());
     }
 
     @Test
-    void epicStatusShouldBeInProgressAfterSubtaskStatusChange() {
-        Assertions.assertEquals(TaskStatus.NEW, testEpic.getStatus());
+    void testEpicStatusShouldBeInProgressAfterSubtaskStatusChange() {
+        assertEquals(TaskStatus.NEW, testEpic.getStatus());
         testSubtask1.setStatus(TaskStatus.IN_PROGRESS);
         testEpic.manageEpicStatus();
-        Assertions.assertEquals(TaskStatus.IN_PROGRESS, testEpic.getStatus());
+        assertEquals(TaskStatus.IN_PROGRESS, testEpic.getStatus());
     }
 
     @Test
-    void epicStatusShouldBeDoneAfterAllSubtasksStatusAreDone() {
-        Assertions.assertEquals(TaskStatus.NEW, testEpic.getStatus());
+    void testEpicStatusShouldBeDoneAfterAllSubtasksStatusAreDone() {
+        assertEquals(TaskStatus.NEW, testEpic.getStatus());
         testSubtask1.setStatus(TaskStatus.DONE);
         testSubtask2.setStatus(TaskStatus.DONE);
         testEpic.manageEpicStatus();
-        Assertions.assertEquals(TaskStatus.DONE, testEpic.getStatus());
+        assertEquals(TaskStatus.DONE, testEpic.getStatus());
     }
 
     @Test
-    void statusShouldNotChangeManually() {
-        UnsupportedOperationException exception = Assertions.assertThrows(UnsupportedOperationException.class, () -> {
+    void testStatusShouldNotChangeManually() {
+        UnsupportedOperationException exception = assertThrows(UnsupportedOperationException.class, () -> {
             testEpic.setStatus(TaskStatus.DONE);
         });
-        Assertions.assertEquals("Статус у задачи типа EPIC контролируется автоматически.",
+        assertEquals("Статус у задачи типа EPIC контролируется автоматически.",
                 exception.getMessage());
     }
 
@@ -75,12 +77,12 @@ class EpicTest {
     void testToString() {
         String toStringAssertion = "model.Epic{taskName='TestEpic', description='TestDescription', " +
                 "taskId=1, status='NEW'}";
-        Assertions.assertEquals(toStringAssertion, testEpic.toString());
+        assertEquals(toStringAssertion, testEpic.toString());
     }
 
     @Test
-    void sameEpicIdsShouldBeEqual() {
+    void testSameEpicIdsShouldBeEqual() {
         Epic newEpic = new Epic("TestEpic2", "TestDescription2", 1);
-        Assertions.assertEquals(newEpic, testEpic);
+        assertEquals(newEpic, testEpic);
     }
 }

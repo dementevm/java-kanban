@@ -27,7 +27,6 @@ public class Subtask extends Task {
         this.epicId = epicId;
     }
 
-
     public Integer getEpicId() {
         return epicId;
     }
@@ -45,5 +44,10 @@ public class Subtask extends Task {
                 ", taskId=" + taskId +
                 ", epicId=" + epicId +
                 '}';
+    }
+
+    @Override
+    public String toDataStorageFile() {
+        return super.toDataStorageFile() + epicId;
     }
 }

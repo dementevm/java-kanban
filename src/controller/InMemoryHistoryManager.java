@@ -2,7 +2,11 @@ package controller;
 
 import model.Task;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class InMemoryHistoryManager implements HistoryManager {
     private final Map<Integer, Node> inMemoryHistoryMap = new HashMap<>();
@@ -25,7 +29,9 @@ public class InMemoryHistoryManager implements HistoryManager {
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             Node node = (Node) o;
-            return Objects.equals(prev, node.prev) && Objects.equals(data, node.data) && Objects.equals(next, node.next);
+            return Objects.equals(prev, node.prev)
+                    && Objects.equals(data, node.data)
+                    && Objects.equals(next, node.next);
         }
 
         @Override
@@ -82,6 +88,12 @@ public class InMemoryHistoryManager implements HistoryManager {
 
     private void removeNode(Node node) {
         Node prev = node.prev;
+
+        if (node.equals(head) && node.equals(tail)) {
+            head = tail = null;
+            return;
+        }
+
         if (node.equals(head)) {
             head = node.next;
             if (head != null) {
