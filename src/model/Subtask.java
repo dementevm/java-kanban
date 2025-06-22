@@ -2,6 +2,9 @@ package model;
 
 import util.TaskStatus;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+
 public class Subtask extends Task {
     // Переменная Integer для реализации модификации статусов model.Epic'а
     private Integer epicId;
@@ -27,6 +30,21 @@ public class Subtask extends Task {
         this.epicId = epicId;
     }
 
+    public Subtask(String taskName, String description, LocalDateTime startTime, Duration duration, Integer epicId) {
+        super(taskName, description, startTime, duration);
+        this.epicId = epicId;
+    }
+
+    public Subtask(String taskName, String description, int taskId, LocalDateTime startTime, Duration duration, Integer epicId) {
+        super(taskName, description, taskId, startTime, duration);
+        this.epicId = epicId;
+    }
+
+    public Subtask(String taskName, String description, int taskId, TaskStatus status, LocalDateTime startTime, Duration duration, Integer epicId) {
+        super(taskName, description, taskId, status, startTime, duration);
+        this.epicId = epicId;
+    }
+
     public Integer getEpicId() {
         return epicId;
     }
@@ -37,17 +55,22 @@ public class Subtask extends Task {
 
     @Override
     public String toString() {
+        String subtaskTimeToString = (startTime != null) ? startTime.format(formatter) : "<не задано>";
+        String subtaskDurationToString = (duration != null) ? duration.toHoursPart() + ":" + duration.toMinutesPart() : "<не задано>";
+
         return "model.Subtask{" +
                 "taskName='" + taskName + '\'' +
                 ", description='" + description + '\'' +
                 ", status='" + status + '\'' +
                 ", taskId=" + taskId +
                 ", epicId=" + epicId +
-                '}';
+                ", startTime=" + subtaskTimeToString +
+                ", duration=" + subtaskDurationToString +
+                "}";
     }
 
     @Override
     public String toDataStorageFile() {
-        return super.toDataStorageFile() + epicId;
+        return super.toDataStorageFile() + "," + epicId;
     }
 }

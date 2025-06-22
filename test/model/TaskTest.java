@@ -74,13 +74,13 @@ class TaskTest {
     @Test
     void testToString() {
         String toStringAssertion = "model.Task{taskName='Test Task', description='Test Description', " +
-                "status='NEW', taskId=1}";
+                "status='NEW', taskId=1, startTime=<не задано>, duration=<не задано>}";
         assertEquals(toStringAssertion, testTask.toString());
     }
 
     @Test
     void testToDataStorage() {
-        String toStringAssertion = "1,TASK,Test Task,NEW,Test Description,";
+        String toStringAssertion = "1,TASK,Test Task,NEW,Test Description,,,";
         assertEquals(toStringAssertion, testTask.toDataStorageFile());
     }
 }

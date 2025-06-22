@@ -22,12 +22,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-class FileBackedTaskManagerTest {
-    private FileBackedTaskManager taskManager;
+class FileBackedTaskManagerTest extends TaskManagerTest<FileBackedTaskManager> {
 
-    @BeforeEach
-    void setUp() throws IOException, TaskNotFound {
-        taskManager = new FileBackedTaskManager(Paths.get("src", "resources", "testDataStorage.csv"));
+    @Override
+    protected FileBackedTaskManager getTaskManager() throws IOException {
+        return new FileBackedTaskManager(Paths.get("src", "resources", "testDataStorage.csv"));
     }
 
     @AfterEach
@@ -59,7 +58,7 @@ class FileBackedTaskManagerTest {
         taskManager.createSubtask(subtask);
         List<String> lines = Files.readAllLines(taskManager.getFileStoragePath());
         assertTrue(lines.stream().anyMatch(line -> line.contains("Epic1")));
-        assertEquals("2,SUBTASK,Subtask1,NEW,SubtaskDescription,1", lines.getLast());
+        assertEquals("5,SUBTASK,Subtask1,NEW,SubtaskDescription,,,,4", lines.getLast());
     }
 
     @Test
@@ -165,7 +164,7 @@ class FileBackedTaskManagerTest {
     void testFileCreatedWithHeaderIfNotExists() throws IOException {
         List<String> lines = Files.readAllLines(taskManager.getFileStoragePath());
         assertFalse(lines.isEmpty());
-        assertEquals("id,type,name,status,description,epic", lines.getFirst());
+        assertEquals("id,type,name,status,description,startTime,duration,endTime,epic", lines.getFirst());
     }
 
     @Test
@@ -190,7 +189,7 @@ class FileBackedTaskManagerTest {
         File testFile = File.createTempFile("test", "csv");
         testFile.deleteOnExit();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(testFile))) {
-            writer.write("id,type,name,status,description,epic");
+            writer.write("id,type,name,status,description,startTime,duration,endTime,epic");
             writer.newLine();
         }
         FileBackedTaskManager manager = FileBackedTaskManager.loadFromFile(testFile);
@@ -206,13 +205,13 @@ class FileBackedTaskManagerTest {
         File testFile = File.createTempFile("test", "csv");
         testFile.deleteOnExit();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(testFile))) {
-            writer.write("id,type,name,status,description,epic");
+            writer.write("id,type,name,status,description,startTime,duration,endTime,epic");
             writer.newLine();
-            writer.write("1,TASK,Task1,NEW,Description1,");
+            writer.write("1,TASK,Task1,NEW,Description1,,,,");
             writer.newLine();
-            writer.write("2,EPIC,Epic1,NEW,Description2,");
+            writer.write("2,EPIC,Epic1,NEW,Description2,,,,");
             writer.newLine();
-            writer.write("3,SUBTASK,Subtask1,NEW,Description3,2");
+            writer.write("3,SUBTASK,Subtask1,NEW,Description3,,,,2");
             writer.newLine();
         }
         FileBackedTaskManager manager = FileBackedTaskManager.loadFromFile(testFile);

@@ -1,14 +1,14 @@
 package controller;
 
+import exceptions.TaskCreateError;
 import exceptions.TaskNotFound;
 import model.Epic;
 import model.Subtask;
 import model.Task;
 import util.Managers;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class InMemoryTaskManager implements TaskManager {
     protected final HashMap<Integer, Task> taskStorage = new HashMap<>();
@@ -31,6 +31,9 @@ public class InMemoryTaskManager implements TaskManager {
     // Методы для Tasks
     @Override
     public int createTask(Task task) {
+        if (hasTimeIntersection(task)) {
+            throw new TaskCreateError("У задачи есть пересечение по времени выполнения с существующей задачей");
+        }
         final int id = ++idCounter;
         task.setTaskId(id);
         tasks.put(id, task);
@@ -74,6 +77,9 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Integer updateTask(Task updatedTask) {
+        if (hasTimeIntersection(updatedTask)) {
+            throw new TaskCreateError("У задачи есть пересечение по времени выполнения с существующей задачей");
+        }
         Task task = tasks.get(updatedTask.getTaskId());
         if (task != null && task.equals(updatedTask)) {
             int taskId = task.getTaskId();
@@ -87,6 +93,9 @@ public class InMemoryTaskManager implements TaskManager {
     // Методы для Subtasks
     @Override
     public int createSubtask(Subtask subtask) {
+        if (hasTimeIntersection(subtask)) {
+            throw new TaskCreateError("У задачи есть пересечение по времени выполнения с существующей задачей");
+        }
         final int id = ++idCounter;
         Epic subtaskEpic = epics.get(subtask.getEpicId());
         if (subtaskEpic != null) {
@@ -95,6 +104,7 @@ public class InMemoryTaskManager implements TaskManager {
             taskStorage.put(id, subtask);
             subtaskEpic.addSubtask(subtask);
             subtaskEpic.manageEpicStatus();
+            subtaskEpic.setEndTime();
             return id;
         } else {
             throw new TaskNotFound();
@@ -124,6 +134,7 @@ public class InMemoryTaskManager implements TaskManager {
             if (epic != null) {
                 epic.removeSubtask(subtask);
                 epic.manageEpicStatus();
+                epic.setEndTime();
             }
         });
         subtasks.clear();
@@ -139,6 +150,7 @@ public class InMemoryTaskManager implements TaskManager {
             if (epic != null) {
                 epic.removeSubtask(subtask);
                 epic.manageEpicStatus();
+                epic.setEndTime();
             }
             subtasks.remove(id);
             taskStorage.remove(id);
@@ -150,6 +162,9 @@ public class InMemoryTaskManager implements TaskManager {
 
     @Override
     public Integer updateSubtask(Subtask updatedSubtask) {
+        if (hasTimeIntersection(updatedSubtask)) {
+            throw new TaskCreateError("У задачи есть пересечение по времени выполнения с существующей задачей");
+        }
         Subtask subtask = subtasks.get(updatedSubtask.getTaskId());
         if (subtask != null && subtask.equals(updatedSubtask)) {
             int taskId = subtask.getTaskId();
@@ -160,6 +175,7 @@ public class InMemoryTaskManager implements TaskManager {
                 epic.removeSubtask(subtask);
                 epic.addSubtask(updatedSubtask);
                 epic.manageEpicStatus();
+                epic.setEndTime();
             }
             return taskId;
         }
@@ -245,5 +261,30 @@ public class InMemoryTaskManager implements TaskManager {
             return epicId;
         }
         throw new TaskNotFound();
+    }
+
+    @Override
+    public TreeSet<Task> getPrioritizedTasks() {
+        return taskStorage.values().stream()
+                .filter(task -> task.getStartTime() != null)
+                // Не вижу смысла также добавлять сюда эпики, если у них, как у самостоятельной
+                // сущности не может быть даты начала, только в связке с Subtask
+                .filter(task -> task.getClass() != Epic.class)
+                .collect(Collectors.toCollection(
+                        () -> new TreeSet<>(Comparator.comparing(Task::getStartTime))
+                ));
+    }
+
+    @Override
+    public boolean hasTimeIntersection(Task newTask) {
+        if (newTask.getStartTime() == null) {
+            return false;
+        }
+
+        return getPrioritizedTasks().stream()
+                .anyMatch(task ->
+                        task.getStartTime().isBefore(newTask.getEndTime()) &&
+                        newTask.getStartTime().isBefore(task.getEndTime())
+                );
     }
 }

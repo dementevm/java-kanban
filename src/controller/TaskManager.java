@@ -7,6 +7,7 @@ import model.Task;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.TreeSet;
 
 public interface TaskManager {
     HashMap<Integer, Task> getTaskStorage();
@@ -51,5 +52,9 @@ public interface TaskManager {
     void deleteEpic(int id);
 
     Integer updateEpic(Epic updatedEpic);
+
+    TreeSet<Task> getPrioritizedTasks();
+
+    boolean hasTimeIntersection(Task task);
 }
 
