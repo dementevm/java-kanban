@@ -87,7 +87,7 @@ class EpicTest {
         String toStringAssertion = "model.Epic{taskName='TestEpic', description='TestDescription', " +
                 "taskId=1, status='NEW', startTime=" + firstSubtaskStartTime.format(testEpic.formatter)
                 + ", duration=" + duration.toHoursPart() + ":" + duration.toMinutesPart() + ", endTime="
-                + firstSubtaskStartTime.plusHours(1).format(testEpic.formatter) + "}";
+                + testSubtask2.getEndTime().format(testEpic.formatter) + "}";
         assertEquals(toStringAssertion, testEpic.toString());
     }
 
@@ -110,7 +110,7 @@ class EpicTest {
     @Test
     void testEpicGetEndTime() {
         testEpic.setEndTime();
-        assertEquals(firstSubtaskStartTime.plusHours(1), testEpic.getEndTime());
+        assertEquals(firstSubtaskStartTime.plusMinutes(65), testEpic.getEndTime());
     }
 
     @Test

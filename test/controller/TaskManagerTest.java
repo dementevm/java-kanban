@@ -50,7 +50,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
     }
 
     @Test
-    void testGetHistory() throws IOException, TaskNotFound {
+    void testGetHistory() throws TaskNotFound {
         taskManager.getTask(1);
         taskManager.getEpic(2);
         taskManager.getSubtask(3);
@@ -68,7 +68,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
     }
 
     @Test
-    void testCreateTask() throws IOException {
+    void testCreateTask() {
         Task newTask = new Task("TestTask", "TestDescription");
         taskManager.createTask(newTask);
         assertEquals(4, taskManager.getTaskStorage().size());
@@ -89,40 +89,44 @@ abstract class TaskManagerTest<T extends TaskManager> {
     }
 
     @Test
-    void testDeleteTasks() throws IOException {
+    void testDeleteTasks() {
         assertEquals(1, taskManager.getTasks().size());
         taskManager.deleteTasks();
         assertEquals(0, taskManager.getTasks().size());
     }
 
     @Test
-    void testDeleteTask() throws IOException, TaskNotFound {
+    void testDeleteTask() throws TaskNotFound {
         assertEquals(1, taskManager.getTasks().size());
         taskManager.deleteTask(1);
         assertEquals(0, taskManager.getTasks().size());
     }
 
     @Test
-    void testUpdateTask() throws TaskNotFound, IOException {
-        Task updatedTask = new Task("TestTaskUpdated", "TestDescriptionUpdated", 1);
+    void testUpdateTask() throws TaskNotFound {
+        Task updatedTask = taskManager.getTask(1);
+        updatedTask.setDescription("UpdatedDescription");
         taskManager.updateTask(updatedTask);
         Task expectedTask = taskManager.getTask(1);
         assertEquals(expectedTask.getTaskName(), updatedTask.getTaskName());
     }
 
     @Test
-    void testUpdateTaskWithSameData() throws TaskNotFound, IOException {
+    void testUpdateTaskWithSameData() throws TaskNotFound {
         Task originalTask = taskManager.getTask(1);
-        Task identicalTask = new Task(originalTask.getTaskName(), originalTask.getDescription(), originalTask.getTaskId());
+        Task identicalTask = new Task(originalTask.getTaskName(), originalTask.getDescription(),
+                originalTask.getTaskId(), originalTask.getStartTime(), originalTask.getDuration());
         taskManager.updateTask(identicalTask);
         Task resultTask = taskManager.getTask(1);
         assertEquals(originalTask.getTaskName(), resultTask.getTaskName());
         assertEquals(originalTask.getDescription(), resultTask.getDescription());
         assertEquals(originalTask.getTaskId(), resultTask.getTaskId());
+        assertEquals(originalTask.getStartTime(), resultTask.getStartTime());
+        assertEquals(originalTask.getDuration(), resultTask.getDuration());
     }
 
     @Test
-    void testCreateSubtask() throws IOException, TaskNotFound {
+    void testCreateSubtask() throws TaskNotFound {
         Subtask newSubtask = new Subtask("TestSubtask", "TestDescription", testEpic.getTaskId());
         taskManager.createSubtask(newSubtask);
         assertEquals(4, taskManager.getTaskStorage().size());
@@ -143,21 +147,21 @@ abstract class TaskManagerTest<T extends TaskManager> {
     }
 
     @Test
-    void testDeleteSubtasks() throws IOException {
+    void testDeleteSubtasks() {
         assertEquals(1, taskManager.getSubtasks().size());
         taskManager.deleteSubtasks();
         assertEquals(0, taskManager.getSubtasks().size());
     }
 
     @Test
-    void testDeleteSubtask() throws IOException, TaskNotFound {
+    void testDeleteSubtask() throws TaskNotFound {
         assertEquals(1, taskManager.getSubtasks().size());
         taskManager.deleteSubtask(3);
         assertEquals(0, taskManager.getSubtasks().size());
     }
 
     @Test
-    void testUpdateSubtask() throws IOException, TaskNotFound {
+    void testUpdateSubtask() throws TaskNotFound {
         Subtask updatedSubtask = new Subtask("TestSubtaskUpdated", "TestDescriptionUpdated", 3, 2);
         taskManager.updateSubtask(updatedSubtask);
         Subtask expectedSubtask = taskManager.getSubtask(3);
@@ -165,7 +169,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
     }
 
     @Test
-    void testCreateEpic() throws IOException {
+    void testCreateEpic() {
         Epic newEpic = new Epic("TestEpic", "TestDescription");
         taskManager.createEpic(newEpic);
         assertEquals(4, taskManager.getTaskStorage().size());
@@ -186,21 +190,21 @@ abstract class TaskManagerTest<T extends TaskManager> {
     }
 
     @Test
-    void testDeleteEpics() throws IOException {
+    void testDeleteEpics() {
         assertEquals(1, taskManager.getEpics().size());
         taskManager.deleteEpics();
         assertEquals(0, taskManager.getEpics().size());
     }
 
     @Test
-    void testDeleteEpic() throws IOException, TaskNotFound {
+    void testDeleteEpic() throws TaskNotFound {
         assertEquals(1, taskManager.getEpics().size());
         taskManager.deleteEpic(2);
         assertEquals(0, taskManager.getEpics().size());
     }
 
     @Test
-    void testUpdateEpic() throws IOException, TaskNotFound {
+    void testUpdateEpic() throws TaskNotFound {
         Epic updatedEpic = new Epic("TestEpicUpdated", "TestDescriptionUpdated", 2);
         taskManager.updateEpic(updatedEpic);
         Epic expectedEpic = taskManager.getEpic(2);
@@ -301,4 +305,26 @@ abstract class TaskManagerTest<T extends TaskManager> {
                 Duration.ofMinutes(30));
         assertThrows(TaskCreateError.class, () -> taskManager.updateTask(updatedTask2));
     }
+
+    @Test
+    void anotherUpdateTask() throws TaskNotFound {
+        List<Task> list = taskManager.getTasks();
+        if (list.isEmpty()){
+            System.out.println("No tasks found");
+            return;
+        }
+        //получить задачу, изменить описание
+        Task t = list.getFirst();
+        int id = t.getTaskId();
+        t.setDescription("UpdateDescription");
+        String taskDescription = t.getDescription();
+
+        //обновить
+        taskManager.updateTask(t);
+
+        //проверить, что сохранилось изменённое
+        t = taskManager.getTask(id);
+        assertEquals(taskDescription, t.getDescription());
+    }
+
 }

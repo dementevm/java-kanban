@@ -264,15 +264,15 @@ public class InMemoryTaskManager implements TaskManager {
     }
 
     @Override
-    public TreeSet<Task> getPrioritizedTasks() {
-        return taskStorage.values().stream()
+    public List<Task> getPrioritizedTasks() {
+        return new ArrayList<>(taskStorage.values().stream()
                 .filter(task -> task.getStartTime() != null)
                 // Не вижу смысла также добавлять сюда эпики, если у них, как у самостоятельной
                 // сущности не может быть даты начала, только в связке с Subtask
                 .filter(task -> task.getClass() != Epic.class)
                 .collect(Collectors.toCollection(
                         () -> new TreeSet<>(Comparator.comparing(Task::getStartTime))
-                ));
+                )));
     }
 
     @Override
@@ -281,7 +281,9 @@ public class InMemoryTaskManager implements TaskManager {
             return false;
         }
 
-        return getPrioritizedTasks().stream()
+        List<Task> prioritizedTasks = getPrioritizedTasks();
+        prioritizedTasks.remove(newTask);
+        return prioritizedTasks.stream()
                 .anyMatch(task ->
                         task.getStartTime().isBefore(newTask.getEndTime()) &&
                         newTask.getStartTime().isBefore(task.getEndTime())

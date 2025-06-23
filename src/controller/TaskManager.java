@@ -53,7 +53,7 @@ public interface TaskManager {
 
     Integer updateEpic(Epic updatedEpic);
 
-    TreeSet<Task> getPrioritizedTasks();
+    List<Task> getPrioritizedTasks();
 
     boolean hasTimeIntersection(Task task);
 }
