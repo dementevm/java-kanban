@@ -29,7 +29,7 @@ class SubtaskTest {
     @Test
     void testToString() {
         String toStringAssertion = "model.Subtask{taskName='Test Subtask', description='Subtask Description', " +
-                "status='NEW', taskId=2, epicId=1}";
+                "status='NEW', taskId=2, epicId=1, startTime=<не задано>, duration=<не задано>}";
         assertEquals(toStringAssertion, testSubtask.toString());
     }
 
@@ -41,7 +41,7 @@ class SubtaskTest {
 
     @Test
     void testToDataStorage() {
-        String toStringAssertion = "2,SUBTASK,Test Subtask,NEW,Subtask Description,1";
+        String toStringAssertion = "2,SUBTASK,Test Subtask,NEW,Subtask Description,,,,1";
         assertEquals(toStringAssertion, testSubtask.toDataStorageFile());
     }
 }

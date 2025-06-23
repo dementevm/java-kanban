@@ -1,13 +1,21 @@
 package model;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.Duration;
 import java.util.Objects;
 import util.TaskStatus;
+import java.util.Optional;
 
 public class Task {
     protected String taskName;
     protected String description;
     protected int taskId;
     protected TaskStatus status = TaskStatus.NEW;
+    protected LocalDateTime startTime;
+    protected Duration duration;
+    protected DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+
 
     public Task(String taskName, String description) {
         this.taskName = taskName;
@@ -31,6 +39,30 @@ public class Task {
         this.description = description;
         this.status = status;
         this.taskId = taskId;
+    }
+
+    public Task(String taskName, String description, LocalDateTime startTime, Duration duration) {
+        this.taskName = taskName;
+        this.description = description;
+        this.startTime = startTime;
+        this.duration = duration;
+    }
+
+    public Task(String taskName, String description, int taskId, LocalDateTime startTime, Duration duration) {
+        this.taskName = taskName;
+        this.description = description;
+        this.taskId = taskId;
+        this.startTime = startTime;
+        this.duration = duration;
+    }
+
+    public Task(String taskName, String description, int taskId, TaskStatus status, LocalDateTime startTime, Duration duration) {
+        this.taskName = taskName;
+        this.description = description;
+        this.taskId = taskId;
+        this.status = status;
+        this.startTime = startTime;
+        this.duration = duration;
     }
 
     public String getTaskName() {
@@ -65,6 +97,29 @@ public class Task {
         this.status = status;
     }
 
+    public Duration getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Duration duration) {
+        this.duration = duration;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        if (startTime != null) {
+            return startTime.plus(duration);
+        }
+        return null;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -80,16 +135,24 @@ public class Task {
 
     @Override
     public String toString() {
+        String taskTimeToString = (startTime != null) ? startTime.format(formatter) : "<не задано>";
+        String taskDurationToString = (duration != null) ? duration.toHoursPart() + ":" + duration.toMinutesPart() : "<не задано>";
+
         return "model.Task{" +
                 "taskName='" + taskName + '\'' +
                 ", description='" + description + '\'' +
                 ", status='" + status + '\'' +
                 ", taskId=" + taskId +
-                '}';
+                ", startTime=" + taskTimeToString  +
+                ", duration=" + taskDurationToString  +
+                "}";
     }
 
     public String toDataStorageFile() {
         return taskId + "," + getClass().getSimpleName().toUpperCase() + "," + taskName + "," + status
-                + "," + description + ",";
+                + "," + description + ","
+                + Optional.ofNullable(startTime).map(Objects::toString).orElse("") + ","
+                + Optional.ofNullable(duration).map(Objects::toString).orElse("")
+                + "," + Optional.ofNullable(getEndTime()).map(Objects::toString).orElse("");
     }
 }

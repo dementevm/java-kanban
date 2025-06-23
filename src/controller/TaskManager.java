@@ -51,5 +51,9 @@ public interface TaskManager {
     void deleteEpic(int id);
 
     Integer updateEpic(Epic updatedEpic);
+
+    List<Task> getPrioritizedTasks();
+
+    boolean hasTimeIntersection(Task task);
 }
 
