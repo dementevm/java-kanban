@@ -259,10 +259,10 @@ abstract class TaskManagerTest<T extends TaskManager> {
     }
 
     @Test
-    void testGetPrioritizedTasks_TasksWithoutStartTimeAreNotInPrioritizedTasks() {
+    void testGetPrioritizedTasks_TasksWithoutStartTimeAreInTheEnd() {
         Task task = new Task("TestTask2", "TestDescription2");
         taskManager.createTask(task);
-        ArrayList<Task> expectedPrioritizedTasks = new ArrayList<>(Arrays.asList(testTask, testSubtask));
+        ArrayList<Task> expectedPrioritizedTasks = new ArrayList<>(Arrays.asList(testTask, testSubtask, task));
         assertArrayEquals(expectedPrioritizedTasks.toArray(), taskManager.getPrioritizedTasks().toArray());
     }
 
