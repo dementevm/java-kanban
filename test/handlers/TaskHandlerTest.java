@@ -1,4 +1,4 @@
-package http_handlers;
+package handlers;
 
 import model.Task;
 import org.junit.jupiter.api.Test;

@@ -1,4 +1,4 @@
-package http_handlers;
+package handlers;
 
 import com.sun.net.httpserver.HttpExchange;
 import controller.TaskManager;

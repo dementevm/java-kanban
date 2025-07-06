@@ -2,7 +2,7 @@ package server;
 
 import com.sun.net.httpserver.HttpServer;
 import controller.TaskManager;
-import http_handlers.*;
+import handlers.*;
 import util.Managers;
 
 import java.io.IOException;
