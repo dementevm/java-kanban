@@ -1,20 +1,28 @@
 package model;
 
+import com.google.gson.annotations.Expose;
+import util.TaskStatus;
+
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.Duration;
 import java.util.Objects;
-import util.TaskStatus;
 import java.util.Optional;
 
 public class Task {
+    @Expose
     protected String taskName;
+    @Expose
     protected String description;
+    @Expose
     protected int taskId;
+    @Expose
     protected TaskStatus status = TaskStatus.NEW;
+    @Expose
     protected LocalDateTime startTime;
+    @Expose
     protected Duration duration;
-    protected DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+    protected static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
 
     public Task(String taskName, String description) {
@@ -137,14 +145,13 @@ public class Task {
     public String toString() {
         String taskTimeToString = (startTime != null) ? startTime.format(formatter) : "<не задано>";
         String taskDurationToString = (duration != null) ? duration.toHoursPart() + ":" + duration.toMinutesPart() : "<не задано>";
-
         return "model.Task{" +
                 "taskName='" + taskName + '\'' +
                 ", description='" + description + '\'' +
                 ", status='" + status + '\'' +
                 ", taskId=" + taskId +
-                ", startTime=" + taskTimeToString  +
-                ", duration=" + taskDurationToString  +
+                ", startTime=" + taskTimeToString +
+                ", duration=" + taskDurationToString +
                 "}";
     }
 

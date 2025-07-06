@@ -1,15 +1,18 @@
 package model;
 
-import java.time.LocalDateTime;
+import com.google.gson.annotations.Expose;
+import util.TaskStatus;
+
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Objects;
 
-import util.TaskStatus;
-
 public class Epic extends Task {
+    @Expose
     protected ArrayList<Subtask> epicSubtasks = new ArrayList<>();
+    @Expose
     protected LocalDateTime endTime;
 
     public Epic(String taskName, String description) {
@@ -27,12 +30,19 @@ public class Epic extends Task {
         super(taskName, description, id, status);
     }
 
+    public void setEpicSubtasks() {
+        if (this.epicSubtasks == null) {
+            this.epicSubtasks = new ArrayList<>();
+        }
+    }
+
     public ArrayList<Subtask> getSubtasks() {
         return epicSubtasks;
     }
 
     public void addSubtask(Subtask subtask) {
         epicSubtasks.add(subtask);
+        setStartTime();
     }
 
     public void removeSubtask(Subtask subtask) {
@@ -72,7 +82,12 @@ public class Epic extends Task {
 
     @Override
     public LocalDateTime getStartTime() {
-        return getFirstSubtaskStartTime();
+        return this.startTime;
+    }
+
+
+    private void setStartTime() {
+        this.startTime = getFirstSubtaskStartTime();
     }
 
     @Override
@@ -135,7 +150,7 @@ public class Epic extends Task {
                 ", status='" + status + '\'' +
                 ", startTime=" + epicStartTimeToString +
                 ", duration=" + epicDurationToString +
-                ", endTime=" + epicEndTimeToString  +
+                ", endTime=" + epicEndTimeToString +
                 '}';
     }
 }
