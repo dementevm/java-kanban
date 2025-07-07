@@ -13,61 +13,35 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class SubtaskHandler extends BaseHttpHandler {
-    private final TaskManager taskManager;
 
     public SubtaskHandler(TaskManager taskManager) {
-        this.taskManager = taskManager;
+        super(taskManager);
     }
 
     @Override
-    public void handle(HttpExchange exchange) throws IOException {
+    protected void handleGetRequest(HttpExchange exchange) throws IOException {
         String lasUrlElement = getLastURLElement(exchange);
-        switch (getMethod(exchange)) {
-            case "GET": {
-                if (hasIdInUrl(lasUrlElement)) {
-                    getSubtask(exchange, Integer.parseInt(lasUrlElement));
-                } else {
-                    if (lasUrlElement.equals("subtasks")) {
-                        getAllSubtasks(exchange);
-                    } else {
-                        sendNotFound(exchange, null);
-                    }
-                }
-                break;
+        if (hasIdInUrl(lasUrlElement)) {
+            int id = Integer.parseInt(lasUrlElement);
+            try {
+                Subtask subtask = taskManager.getSubtask(id);
+                sendText(exchange, gson.toJson(subtask));
+            } catch (TaskNotFound e) {
+                sendNotFound(exchange, String.format("Subtask с id %d не найдена", id));
             }
-            case "POST": {
-                createOrUpdateSubtask(exchange);
-                break;
+        } else {
+            if (lasUrlElement.equals("subtasks")) {
+                ArrayList<Subtask> subtasks = taskManager.getSubtasks();
+                String json = gson.toJson(subtasks);
+                sendText(exchange, json);
+            } else {
+                sendNotFound(exchange, null);
             }
-            case "DELETE": {
-                if (hasIdInUrl(lasUrlElement)) {
-                    deleteSubtask(exchange, Integer.parseInt(lasUrlElement));
-                } else {
-                    sendNotFound(exchange, null);
-                }
-                break;
-            }
-            default:
-                sendForbiddenMethod(exchange);
         }
     }
 
-    public void getSubtask(HttpExchange exchange, int id) throws IOException {
-        try {
-            Subtask subtask = taskManager.getSubtask(id);
-            sendText(exchange, gson.toJson(subtask));
-        } catch (TaskNotFound e) {
-            sendNotFound(exchange, String.format("Subtask с id %d не найдена", id));
-        }
-    }
-
-    public void getAllSubtasks(HttpExchange exchange) throws IOException {
-        ArrayList<Subtask> subtasks = taskManager.getSubtasks();
-        String json = gson.toJson(subtasks);
-        sendText(exchange, json);
-    }
-
-    public void createOrUpdateSubtask(HttpExchange exchange) throws IOException {
+    @Override
+    protected void handlePostRequest(HttpExchange exchange) throws IOException {
         JsonObject taskJson = getJsonObject(exchange);
         JsonElement id = taskJson.get("taskId");
         JsonElement epicID = taskJson.get("epicId");
@@ -95,12 +69,19 @@ public class SubtaskHandler extends BaseHttpHandler {
         }
     }
 
-    public void deleteSubtask(HttpExchange exchange, int taskId) throws IOException {
-        try {
-            taskManager.deleteSubtask(taskId);
-            sendText(exchange, String.format("Subtask с id %d удален", taskId));
-        } catch (TaskNotFound e) {
-            sendNotFound(exchange, String.format("Subtask с id %d не найден", taskId));
+    @Override
+    protected void handleDeleteRequest(HttpExchange exchange) throws IOException {
+        String lasUrlElement = getLastURLElement(exchange);
+        if (hasIdInUrl(lasUrlElement)) {
+            int taskId = Integer.parseInt(lasUrlElement);
+            try {
+                taskManager.deleteSubtask(taskId);
+                sendText(exchange, String.format("Subtask с id %d удален", taskId));
+            } catch (TaskNotFound e) {
+                sendNotFound(exchange, String.format("Subtask с id %d не найден", taskId));
+            }
+        } else {
+            sendNotFound(exchange, null);
         }
     }
 }

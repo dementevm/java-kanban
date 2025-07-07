@@ -5,9 +5,11 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
+import controller.TaskManager;
 import model.Task;
 import util.DurationAdapter;
 import util.LocalDateTimeAdapter;
+import util.Managers;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -25,6 +27,43 @@ public abstract class BaseHttpHandler implements HttpHandler {
             .serializeNulls()
             .excludeFieldsWithoutExposeAnnotation()
             .create();
+    protected TaskManager taskManager;
+
+    public BaseHttpHandler(TaskManager taskManager) {
+        this.taskManager = taskManager;
+    }
+
+    @Override
+    public void handle(HttpExchange exchange) throws IOException {
+        switch (getMethod(exchange)) {
+            case "GET": {
+                handleGetRequest(exchange);
+                break;
+            }
+            case "POST": {
+                handlePostRequest(exchange);
+                break;
+            }
+            case "DELETE": {
+                handleDeleteRequest(exchange);
+                break;
+            }
+            default:
+                sendForbiddenMethod(exchange);
+        }
+    }
+
+    protected void handleGetRequest(HttpExchange httpExchange) throws IOException {
+        sendForbiddenMethod(httpExchange);
+    };
+
+    protected void handlePostRequest(HttpExchange httpExchange) throws IOException {
+        sendForbiddenMethod(httpExchange);
+    };
+
+    protected void handleDeleteRequest(HttpExchange httpExchange) throws IOException {
+        sendForbiddenMethod(httpExchange);
+    };
 
     protected String getMethod(HttpExchange h) {
         return h.getRequestMethod();
