@@ -55,15 +55,15 @@ public abstract class BaseHttpHandler implements HttpHandler {
 
     protected void handleGetRequest(HttpExchange httpExchange) throws IOException {
         sendForbiddenMethod(httpExchange);
-    };
+    }
 
     protected void handlePostRequest(HttpExchange httpExchange) throws IOException {
         sendForbiddenMethod(httpExchange);
-    };
+    }
 
     protected void handleDeleteRequest(HttpExchange httpExchange) throws IOException {
         sendForbiddenMethod(httpExchange);
-    };
+    }
 
     protected String getMethod(HttpExchange h) {
         return h.getRequestMethod();
