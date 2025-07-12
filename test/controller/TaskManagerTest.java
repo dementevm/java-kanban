@@ -309,8 +309,7 @@ abstract class TaskManagerTest<T extends TaskManager> {
     @Test
     void anotherUpdateTask() throws TaskNotFound {
         List<Task> list = taskManager.getTasks();
-        if (list.isEmpty()){
-            System.out.println("No tasks found");
+        if (list.isEmpty()) {
             return;
         }
         //получить задачу, изменить описание

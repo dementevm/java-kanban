@@ -103,9 +103,9 @@ public class InMemoryTaskManager implements TaskManager {
         if (hasTimeIntersection(subtask)) {
             throw new TaskCreateError("У задачи есть пересечение по времени выполнения с существующей задачей");
         }
-        final int id = ++idCounter;
         Epic subtaskEpic = epics.get(subtask.getEpicId());
         if (subtaskEpic != null) {
+            final int id = ++idCounter;
             subtask.setTaskId(id);
             subtasks.put(id, subtask);
             taskStorage.put(id, subtask);
@@ -245,12 +245,14 @@ public class InMemoryTaskManager implements TaskManager {
         Epic epic = epics.get(id);
         if (epic != null) {
             ArrayList<Subtask> epicSubtasks = epic.getSubtasks();
-            epicSubtasks.forEach(epicSubtask -> {
-                int taskId = epicSubtask.getTaskId();
-                subtasks.remove(taskId);
-                taskStorage.remove(taskId);
-                historyManager.remove(taskId);
-            });
+            if (epicSubtasks != null && !epicSubtasks.isEmpty()) {
+                epicSubtasks.forEach(epicSubtask -> {
+                    int taskId = epicSubtask.getTaskId();
+                    subtasks.remove(taskId);
+                    taskStorage.remove(taskId);
+                    historyManager.remove(taskId);
+                });
+            }
             epics.remove(id);
             taskStorage.remove(id);
             historyManager.remove(id);
@@ -290,7 +292,7 @@ public class InMemoryTaskManager implements TaskManager {
         return prioritizedTasks.stream()
                 .anyMatch(task ->
                         task.getStartTime().isBefore(newTask.getEndTime()) &&
-                        newTask.getStartTime().isBefore(task.getEndTime())
+                                newTask.getStartTime().isBefore(task.getEndTime())
                 );
     }
 }

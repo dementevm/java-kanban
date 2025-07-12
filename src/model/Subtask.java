@@ -1,5 +1,6 @@
 package model;
 
+import com.google.gson.annotations.Expose;
 import util.TaskStatus;
 
 import java.time.Duration;
@@ -7,6 +8,7 @@ import java.time.LocalDateTime;
 
 public class Subtask extends Task {
     // Переменная Integer для реализации модификации статусов model.Epic'а
+    @Expose
     private Integer epicId;
 
     public Subtask(String title, String description, int epicId) {
